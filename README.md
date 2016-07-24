@@ -8,7 +8,7 @@ burglar
 [![Code Quality](https://img.shields.io/codacy/.svg)](https://www.codacy.com/app/akerl/burglar)
 [![MIT Licensed](https://img.shields.io/badge/license-MIT-green.svg)](https://tldrlegal.com/license/mit-license)
 
-SHORT_DESCRIPTION
+Tool for parsing data from bank websites
 
 ## Usage
 
