@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+require 'burglar'
+require 'mercenary'
+
+def add_common_opts(c)
+  # rubocop:disable Metrics/LineLength
+  c.option :account, '-a NAME[,NAME]', '--account NAME[,NAME]', 'Account(s) to check'
+  # rubocop:enable Metrics/LineLength
+end
+
+Mercenary.program(:burglar) do |p|
+  p.version Burglar::VERSION
+  p.description 'Load data from banks'
+  p.syntax 'burglar <subcommand> [options]'
+
+  p.command(:register) do |c|
+    c.syntax 'register [options]'
+    c.description 'List transactions'
+    c.alias :reg
+
+    add_common_opts(c)
+
+    c.action do |opts, _|
+      Burglar.new(opts).register!
+    end
+  end
+
+  p.command(:balance) do |c|
+    c.syntax 'balance [options]'
+    c.description 'Check balance'
+    c.alias :bal
+
+    add_common_opts(c)
+
+    c.action do |opts, _|
+      Burglar.new(opts).balance!
+    end
+  end
+
+  p.action do
+    puts p
+    exit 1
+  end
+end
