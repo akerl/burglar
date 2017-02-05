@@ -18,8 +18,8 @@ module LogCabin
       AMEX_CSV_PATH = '/myca/estmt/us/downloadTxn.do'.freeze
       # rubocop:enable Metrics/LineLength
 
-      def transactions
-        csv.map do |row|
+      def raw_transactions
+        @raw_transactions ||= csv.map do |row|
           raw_date, raw_amount, raw_name = row.values_at(0, 7, 11)
           date = Date.strptime(raw_date, '%m/%d/%Y %a')
           amount = format('$%.2f', raw_amount)

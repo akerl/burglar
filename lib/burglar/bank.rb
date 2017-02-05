@@ -1,5 +1,3 @@
-require 'libledger'
-
 module Burglar
   ##
   # Single bank's information
@@ -7,6 +5,10 @@ module Burglar
     def initialize(params = {})
       @options = params
       extend module_obj
+    end
+
+    def transactions
+      Ledger.new(entries: raw_transactions)
     end
 
     private

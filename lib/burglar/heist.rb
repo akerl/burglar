@@ -11,7 +11,9 @@ module Burglar
     end
 
     def transactions
-      @transactions ||= banks.map { |_, v| v.transactions }.flatten
+      @transactions ||= Ledger.new(
+        entries: banks.map { |_, v| v.transactions.entries }.flatten
+      )
     end
   end
 end

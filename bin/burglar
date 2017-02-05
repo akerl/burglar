@@ -23,6 +23,6 @@ Mercenary.program(:burglar) do |p|
   add_common_opts(p)
 
   p.action do |_, options|
-    p Burglar.new(load_config(options[:config])).transactions
+    puts Burglar.new(load_config(options[:config])).transactions
   end
 end

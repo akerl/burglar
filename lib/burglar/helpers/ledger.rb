@@ -4,7 +4,7 @@ module LogCabin
     # Provide a helper to create simple Ledger objects
     module Ledger
       def simple_ledger(date, name, amount)
-        Ledger::Entry.new(
+        ::Ledger::Entry.new(
           name: name,
           state: date > Date.today ? :pending : :cleared,
           date: date.strftime('%Y/%m/%d'),

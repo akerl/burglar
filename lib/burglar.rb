@@ -1,4 +1,5 @@
 require 'logcabin'
+require 'libledger'
 
 ##
 # This module provides a unified interface for pulling accountig transactions
