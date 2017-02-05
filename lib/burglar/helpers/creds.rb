@@ -1,4 +1,4 @@
-Prospectus.extra_dep('creds', 'keylime')
+Burglar.extra_dep('creds', 'keylime')
 
 module LogCabin
   module Modules

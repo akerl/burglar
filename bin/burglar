@@ -3,9 +3,16 @@
 require 'burglar'
 require 'mercenary'
 require 'cymbal'
+require 'yaml'
 
 def add_common_opts(c)
   c.option :config, '-c FILE', '--config FILE', 'Config file to load'
+end
+
+def load_config(file)
+  file ||= '~/.burglar.yml'
+  file = File.expand_path file
+  Cymbal.symbolize YAML.safe_load(File.read(file))
 end
 
 Mercenary.program(:burglar) do |p|
@@ -15,7 +22,7 @@ Mercenary.program(:burglar) do |p|
 
   add_common_opts(p)
 
-  p.action do |opts, _|
-    p Burglar.new(opts).transactions
+  p.action do |_, options|
+    p Burglar.new(load_config(options[:config])).transactions
   end
 end

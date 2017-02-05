@@ -7,11 +7,11 @@ module Burglar
     end
 
     def banks
-      @banks ||= @options[:banks].map { |k, v| [k, Burglar::Bank.new(v)] }
+      @banks ||= @options[:banks].map { |k, v| [k, Burglar::Bank.new(v)] }.to_h
     end
 
     def transactions
-      @transactions ||= @banks.map { |_, v| v.transactions }.flatten
+      @transactions ||= banks.map { |_, v| v.transactions }.flatten
     end
   end
 end
