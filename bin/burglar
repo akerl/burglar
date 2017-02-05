@@ -2,44 +2,20 @@
 
 require 'burglar'
 require 'mercenary'
+require 'cymbal'
 
 def add_common_opts(c)
-  # rubocop:disable Metrics/LineLength
-  c.option :account, '-a NAME[,NAME]', '--account NAME[,NAME]', 'Account(s) to check'
-  # rubocop:enable Metrics/LineLength
+  c.option :config, '-c FILE', '--config FILE', 'Config file to load'
 end
 
 Mercenary.program(:burglar) do |p|
   p.version Burglar::VERSION
   p.description 'Load data from banks'
-  p.syntax 'burglar <subcommand> [options]'
+  p.syntax 'burglar [options]'
 
-  p.command(:register) do |c|
-    c.syntax 'register [options]'
-    c.description 'List transactions'
-    c.alias :reg
+  add_common_opts(p)
 
-    add_common_opts(c)
-
-    c.action do |opts, _|
-      Burglar.new(opts).register!
-    end
-  end
-
-  p.command(:balance) do |c|
-    c.syntax 'balance [options]'
-    c.description 'Check balance'
-    c.alias :bal
-
-    add_common_opts(c)
-
-    c.action do |opts, _|
-      Burglar.new(opts).balance!
-    end
-  end
-
-  p.action do
-    puts p
-    exit 1
+  p.action do |opts, _|
+    p Burglar.new(opts).transactions
   end
 end

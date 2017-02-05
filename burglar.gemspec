@@ -12,6 +12,11 @@ Gem::Specification.new do |s|
 
   s.files       = `git ls-files`.split
   s.test_files  = `git ls-files spec/*`.split
+  s.executables = ['burglar']
+
+  s.add_dependency 'mercenary', '~> 0.3.4'
+  s.add_dependency 'logcabin', '~> 0.1.3'
+  s.add_dependency 'cymbal', '~> 1.0.0'
 
   s.add_development_dependency 'rubocop', '~> 0.47.0'
   s.add_development_dependency 'rake', '~> 12.0.0'
