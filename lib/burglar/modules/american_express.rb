@@ -9,6 +9,7 @@ module LogCabin
     # American Express
     module AmericanExpress
       include Burglar.helpers.find(:creds)
+      include Burglar.helpers.find(:ledger)
 
       # rubocop:disable Metrics/LineLength
       AMEX_DOMAIN = 'https://online.americanexpress.com'.freeze
@@ -18,25 +19,27 @@ module LogCabin
       # rubocop:enable Metrics/LineLength
 
       def transactions
-        rows = csv.map { |x| x.values_at(0, 7, 11) }
-        require 'pry'
-        binding.pry # rubocop:disable Lint/Debugger
-        rows.map do |raw_date, raw_amount, raw_name|
+        csv.map do |row|
+          raw_date, raw_amount, raw_name = row.values_at(0, 7, 11)
           date = Date.strptime(raw_date, '%m/%d/%Y %a')
-          amount = format('%.2f', raw_amount)
+          amount = format('$%.2f', raw_amount)
           name = raw_name.empty? ? 'Amex Payment' : raw_name.downcase
-          [date, amount, name]
+          simple_ledger(date, name, amount)
         end
       end
 
       private
 
-      def start_date
-        Date.today
+      def default_account_name
+        'Liabilities:Credit:american_express'.freeze
       end
 
       def end_date
-        start_date - 35
+        Date.today
+      end
+
+      def start_date
+        end_date - 35
       end
 
       def user

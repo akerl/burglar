@@ -1,3 +1,5 @@
+require 'libledger'
+
 module Burglar
   ##
   # Single bank's information
@@ -8,6 +10,14 @@ module Burglar
     end
 
     private
+
+    def account_name
+      @account_name ||= @options[:account] || default_account_name
+    end
+
+    def default_account_name
+      raise('Module failed to override default_account_name')
+    end
 
     def type
       @type ||= @options[:type] || raise('Must supply an account type')
