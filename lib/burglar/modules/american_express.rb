@@ -55,7 +55,6 @@ module LogCabin
       end
 
       def csv_page
-        login!
         params = static_fields.merge(
           'startDate' => begin_date.strftime('%m%d%Y'),
           'endDate' => end_date.strftime('%m%d%Y')
