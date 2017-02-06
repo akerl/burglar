@@ -6,7 +6,7 @@ module LogCabin
   module Modules
     ##
     # Ally
-    module Ally
+    module Ally # rubocop:disable Metrics/ModuleLength
       include Burglar.helpers.find(:creds)
       include Burglar.helpers.find(:mechanize)
       include Burglar.helpers.find(:ledger)
@@ -14,8 +14,10 @@ module LogCabin
       ALLY_DOMAIN = 'https://secure.ally.com'.freeze
       ALLY_CSRF_URL = ALLY_DOMAIN + '/capi-gw/session/status/olbWeb'
       ALLY_AUTH_URL = ALLY_DOMAIN + '/capi-gw/customer/authentication'
+      ALLY_AUTH_PATCH_URL = ALLY_AUTH_URL + '?_method=PATCH'
       ALLY_MFA_URL = ALLY_DOMAIN + '/capi-gw/notification'
       ALLY_DEVICE_URL = ALLY_DOMAIN + '/capi-gw/customer/device'
+      ALLY_DEVICE_PATCH_URL = ALLY_DEVICE_URL + '?_method=PATCH'
       ALLY_ACCOUNT_URL = ALLY_DOMAIN + '/capi-gw/accounts'
 
       def raw_transactions
@@ -36,7 +38,8 @@ module LogCabin
       end
 
       def raw_csv
-        @raw_csv ||= mech.get(raw_csv_url, csv_data, referrer, csv_headers)
+        csv_headers = headers('text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8') # rubocop:disable Metrics/LineLength
+        @raw_csv ||= mech.get(raw_csv_url, csv_data, nil, csv_headers)
       end
 
       def csv
@@ -50,7 +53,6 @@ module LogCabin
 
       def csv_data
         @csv_data ||= {
-          'patron-id' => 'olbWeb',
           'fromDate' => begin_date.strftime('%Y-%m-%d'),
           'toDate' => end_date.strftime('%Y-%m-%d'),
           'status' => 'Posted'
@@ -75,49 +77,34 @@ module LogCabin
         @device_token = res.lines.grep(/Serial Number/).first.split.last
       end
 
-      def auth_headers
-        @auth_headers = {
+      def headers(accept, spname = nil)
+        {
           'CSRFChallengeToken' => csrf_token,
           'ApplicationName' => 'AOB',
           'ApplicationId' => 'ALLYUSBOLB',
-          'spname' => 'auth',
-          'Accept' => 'application/v1+json',
-          'ApplicationVersion' => '1.0'
-        }
+          'ApplicationVersion' => '1.0',
+          'Accept' => accept,
+          'spname' => spname
+        }.reject { |_, v| v.nil? }
       end
 
-      def account_headers
-        @accounts_headers = {
-          'spname' => 'common-api',
-          'BankAPIVersion' => '2.9',
-          'CSRFChallengeToken' => csrf_token,
-          'Accept' => 'application/vnd.api+json',
-          'patron-id' => 'olbWeb',
-          'Accept-Encoding' => 'gzip, deflate, sdch, br',
-          'Accept-Language' => 'en-US,en;q=0.8'
-        }
+      def auth_headers
+        @auth_headers ||= headers('application/v1+json', 'auth')
       end
 
-      def csv_headers
-        @csv_headers = {
-          'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8', # rubocop:disable Metrics/LineLength
-          'Accept-Encoding' => 'gzip, deflate, sdch, br',
-          'Accept-Language' => 'en-US,en;q=0.8'
-        }
-      end
-
-      def referrer
-        'https://secure.ally.com/'
-      end
-
-      def auth_data
-        @auth_data = {
-          'userNamePvtEncrypt' => user,
-          'passwordPvtBlock' => password,
-          'rememberMeFlag' => 'false',
+      def common_data
+        @common_data = {
           'channelType' => 'OLB',
           'devicePrintRSA' => device_token
         }
+      end
+
+      def auth_data
+        @auth_data = common_data.merge(
+          'userNamePvtEncrypt' => user,
+          'passwordPvtBlock' => password,
+          'rememberMeFlag' => 'false'
+        )
       end
 
       def setup_mech
@@ -129,23 +116,24 @@ module LogCabin
       def mfa_data(payload)
         mfa_methods = payload['authentication']['mfa']['mfaDeliveryMethods']
         mfa_id = mfa_methods.first['deliveryMethodId']
-        {
-          'deliveryMethodId' => mfa_id,
-          'devicePrintRSA' => device_token,
-          'channelType' => 'OLB'
-        }
+        common_data.merge('deliveryMethodId' => mfa_id)
+      end
+
+      def mfa_token
+        UserInput.new(message: 'MFA token', validation: /^\d+$/).ask
       end
 
       def mfa(payload)
         mech.post(ALLY_MFA_URL, mfa_data(payload), auth_headers)
-        token = UserInput.new(message: 'MFA token', validation: /^\d+$/).ask
-        mech.post(ALLY_AUTH_URL + '?_method=PATCH', { 'otpCodePvtBlock' => token, 'devicePrintRSA' => device_token }, auth_headers)
-        mech.post(ALLY_DEVICE_URL + '?_method=PATCH', { 'devicePrintRSA' => device_token }, auth_headers)
+        data = common_data.merge('otpCodePvtBlock' => mfa_token)
+        mech.post(ALLY_AUTH_PATCH_URL, data, auth_headers)
+        mech.post(ALLY_DEVICE_PATCH_URL, common_data, auth_headers)
       end
 
       def accounts
+        account_headers = headers('application/vnd.api+json', 'common-api')
         @accounts ||= JSON.parse(
-          mech.get(ALLY_ACCOUNT_URL, [], referrer, account_headers).body
+          mech.get(ALLY_ACCOUNT_URL, [], nil, account_headers).body
         )
       end
 
