@@ -7,7 +7,9 @@ module Burglar
     end
 
     def banks
-      @banks ||= @options[:banks].map { |k, v| [k, Burglar::Bank.new(v)] }.to_h
+      @banks ||= @options[:banks].map do |k, v|
+        [k, Burglar::Bank.new(@options.merge(v))]
+      end.to_h
     end
 
     def transactions

@@ -11,6 +11,14 @@ module Burglar
       Ledger.new(entries: raw_transactions)
     end
 
+    def begin_date
+      @begin_date ||= @options[:begin]
+    end
+
+    def end_date
+      @end_date ||= @options[:end]
+    end
+
     private
 
     def account_name

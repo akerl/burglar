@@ -1,8 +1,6 @@
 require 'csv'
 require 'date'
 
-Burglar.extra_dep('american_express', 'mechanize')
-
 module LogCabin
   module Modules
     ##
@@ -10,6 +8,7 @@ module LogCabin
     module AmericanExpress
       include Burglar.helpers.find(:creds)
       include Burglar.helpers.find(:ledger)
+      include Burglar.helpers.find(:mechanize)
 
       # rubocop:disable Metrics/LineLength
       AMEX_DOMAIN = 'https://online.americanexpress.com'.freeze
@@ -34,14 +33,6 @@ module LogCabin
         'Liabilities:Credit:american_express'.freeze
       end
 
-      def end_date
-        Date.today
-      end
-
-      def start_date
-        end_date - 35
-      end
-
       def user
         @user ||= @options[:user]
       end
@@ -50,11 +41,7 @@ module LogCabin
         @password ||= creds(AMEX_DOMAIN, user)
       end
 
-      def mech
-        @mech ||= Mechanize.new
-      end
-
-      def login!
+      def setup_mech
         page = mech.get(AMEX_DOMAIN + AMEX_LOGIN_PATH)
         form = page.form_with(id: AMEX_LOGIN_FORM) do |f|
           f.UserID = user
@@ -70,7 +57,7 @@ module LogCabin
       def csv_page
         login!
         params = static_fields.merge(
-          'startDate' => start_date.strftime('%m%d%Y'),
+          'startDate' => begin_date.strftime('%m%d%Y'),
           'endDate' => end_date.strftime('%m%d%Y')
         )
         mech.post(AMEX_DOMAIN + AMEX_CSV_PATH, params)

@@ -7,6 +7,8 @@ require 'yaml'
 
 def add_common_opts(c)
   c.option :config, '-c FILE', '--config FILE', 'Config file to load'
+  c.option :begin, '-b DATE', '--begin DATE', 'Beginning of date range'
+  c.option :end, '-e DATE', '--end DATE', 'End of date range'
 end
 
 def load_config(file)
@@ -23,6 +25,9 @@ Mercenary.program(:burglar) do |p|
   add_common_opts(p)
 
   p.action do |_, options|
-    puts Burglar.new(load_config(options[:config])).transactions
+    options[:end] ||= Date.today
+    options[:begin] ||= options[:end] - 30
+    config = load_config(options[:config]).merge(options)
+    puts Burglar.new(config).transactions
   end
 end
