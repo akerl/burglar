@@ -68,6 +68,7 @@ module LogCabin
       end
 
       def csrf_token
+        mech
         @csrf_token ||= mech.get(ALLY_CSRF_URL).response['csrfchallengetoken']
       end
 
