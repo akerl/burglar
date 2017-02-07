@@ -1,6 +1,7 @@
 require 'json'
 require 'csv'
 require 'date'
+require 'digest/sha1'
 
 module LogCabin
   module Modules
@@ -75,7 +76,8 @@ module LogCabin
       def device_token
         return @device_token if @device_token
         res = `system_profiler SPHardwareDataType`
-        @device_token = res.lines.grep(/Serial Number/).first.split.last
+        raw_token = res.lines.grep(/Serial Number/).first.split.last
+        @device_token = Digest::SHA1.hexdigest raw_token
       end
 
       def headers(accept, spname = nil)
