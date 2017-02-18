@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'mercenary', '~> 0.3.4'
   s.add_dependency 'logcabin', '~> 0.1.3'
   s.add_dependency 'cymbal', '~> 1.0.0'
-  s.add_dependency 'libledger', '~> 0.0.1'
+  s.add_dependency 'libledger', '~> 0.0.3'
 
   s.add_development_dependency 'rubocop', '~> 0.47.0'
   s.add_development_dependency 'rake', '~> 12.0.0'
