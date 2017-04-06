@@ -48,7 +48,7 @@ module LogCabin
           raw_csv.body,
           headers: true,
           header_converters: :symbol,
-          converters: [:date, :float]
+          converters: %i[date float]
         ).map(&:to_h)
       end
 
