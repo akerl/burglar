@@ -42,6 +42,7 @@ module LogCabin
       end
 
       def setup_mech
+        mech.user_agent = 'chrome'
         page = mech.get(AMEX_DOMAIN + AMEX_LOGIN_PATH)
         form = page.form_with(id: AMEX_LOGIN_FORM) do |f|
           f.UserID = user
