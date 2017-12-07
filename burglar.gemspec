@@ -1,6 +1,10 @@
+require 'English'
+$LOAD_PATH.unshift File.expand_path('../lib/', __FILE__)
+require 'burglar/version'
+
 Gem::Specification.new do |s|
   s.name        = 'burglar'
-  s.version     = '0.0.2'
+  s.version     = Burglar::VERSION
   s.date        = Time.now.strftime('%Y-%m-%d')
 
   s.summary     = 'Tool for parsing data from bank websites'
