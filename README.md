@@ -2,7 +2,6 @@ burglar
 =========
 
 [![Gem Version](https://img.shields.io/gem/v/burglar.svg)](https://rubygems.org/gems/burglar)
-[![Dependency Status](https://img.shields.io/gemnasium/akerl/burglar.svg)](https://gemnasium.com/akerl/burglar)
 [![Build Status](https://img.shields.io/circleci/project/akerl/burglar/master.svg)](https://circleci.com/gh/akerl/burglar)
 [![Coverage Status](https://img.shields.io/codecov/c/github/akerl/burglar.svg)](https://codecov.io/github/akerl/burglar)
 [![Code Quality](https://img.shields.io/codacy/940f3f131d724124a68a0be7d21f951b.svg)](https://www.codacy.com/app/akerl/burglar)
