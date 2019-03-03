@@ -4,6 +4,7 @@ require 'burglar'
 require 'mercenary'
 require 'cymbal'
 require 'yaml'
+require 'date'
 
 def add_common_opts(c)
   c.option :config, '-c FILE', '--config FILE', 'Config file to load'
@@ -17,6 +18,11 @@ def load_config(file)
   Cymbal.symbolize YAML.safe_load(File.read(file))
 end
 
+def date_parse_or_default(string, default)
+  return default unless string
+  Date.parse(string)
+end
+
 Mercenary.program(:burglar) do |p|
   p.version Burglar::VERSION
   p.description 'Load data from banks'
@@ -25,8 +31,8 @@ Mercenary.program(:burglar) do |p|
   add_common_opts(p)
 
   p.action do |_, options|
-    options[:end] ||= Date.today
-    options[:begin] ||= options[:end] - 30
+    options[:end] = date_parse_or_default(options[:end], Date.today)
+    options[:begin] = date_parse_or_default(options[:begin], options[:end])
     config = load_config(options[:config]).merge(options)
     puts Burglar.new(config).transactions
   end
