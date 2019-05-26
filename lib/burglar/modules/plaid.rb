@@ -1,4 +1,4 @@
-require 'plaid'
+Burglar.extra_dep('plaid', 'plaid')
 
 module LogCabin
   module Modules
