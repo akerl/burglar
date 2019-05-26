@@ -32,7 +32,7 @@ Mercenary.program(:burglar) do |p|
 
   p.action do |_, options|
     options[:end] = date_parse_or_default(options[:end], Date.today)
-    options[:begin] = date_parse_or_default(options[:begin], options[:end])
+    options[:begin] = date_parse_or_default(options[:begin], options[:end] - 30)
     config = load_config(options[:config]).merge(options)
     puts Burglar.new(config).transactions
   end

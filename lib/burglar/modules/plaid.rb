@@ -12,12 +12,17 @@ module LogCabin
 
       def raw_transactions # rubocop:disable Metrics/MethodLength
         @raw_transactions ||= all_transactions.map do |row|
+          amount = "$#{row.amount}"
+          name = row.name.downcase
+          action = guess_action(name)
+          state = row.pending ? :pending : :cleared
+
           ::Ledger::Entry.new(
-            name: row.name.downcase,
-            state: row.pending ? :pending : :cleared,
+            name: name,
+            state: state,
             date: row.date,
             actions: [
-              { name: guess_action(row.name.downcase), amount: row.amount },
+              { name: action, amount: amount },
               { name: account_name }
             ]
           )
@@ -74,12 +79,14 @@ module LogCabin
 
       def account_id
         @account_id ||= accounts.find do |x|
-          x['name'] == account_name
+          x['name'] == account_clean_name
         end['account_id']
       end
 
-      def account_name
-        @account_name ||= @options[:name] || raise('No account name provided')
+      def account_clean_name
+        @account_clean_name ||= @options[:name] || raise(
+          'No account name provided'
+        )
       end
 
       def client_id
@@ -95,7 +102,7 @@ module LogCabin
       end
 
       def access_token
-        @access_token ||= creds(PLAID_DOMAIN, account)
+        @access_token ||= creds(PLAID_DOMAIN, account_name)
       end
     end
   end
