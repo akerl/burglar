@@ -77,15 +77,18 @@ module LogCabin
         @accounts ||= api_client.accounts.get(access_token)['accounts']
       end
 
+      def account
+        @account ||= accounts.first if accounts.size == 1
+        @account ||= accounts.find { |x| x['name'] == account_clean_name }
+      end
+
       def account_id
-        @account_id ||= accounts.find do |x|
-          x['name'] == account_clean_name
-        end['account_id']
+        @account_id ||= account['account_id']
       end
 
       def account_clean_name
         @account_clean_name ||= @options[:name] || raise(
-          'No account name provided'
+          'Account name needed (more than one option) but not provided'
         )
       end
 
