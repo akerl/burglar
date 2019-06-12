@@ -58,6 +58,7 @@ module LogCabin
           new, total = get_transactions_page(list.length)
           list += new
         end
+        list.reject!(&:pending) unless @options[:pending]
         @all_transactions = list
       end
 
