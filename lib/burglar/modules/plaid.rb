@@ -12,7 +12,7 @@ module LogCabin
 
       def raw_transactions # rubocop:disable Metrics/MethodLength
         @raw_transactions ||= all_transactions.map do |row|
-          amount = "$#{row.amount}"
+          amount = format('$%.2f', row.amount)
           name = row.name.downcase
           action = guess_action(name)
           state = row.pending ? :pending : :cleared
@@ -24,7 +24,8 @@ module LogCabin
             actions: [
               { name: action, amount: amount },
               { name: account_name }
-            ]
+            ],
+            tags: { 'transaction_id' => row.transaction_id }
           )
         end
       end
