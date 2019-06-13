@@ -2,8 +2,6 @@
 
 require 'burglar'
 require 'mercenary'
-require 'cymbal'
-require 'yaml'
 require 'date'
 
 def add_common_opts(c)
@@ -11,12 +9,6 @@ def add_common_opts(c)
   c.option :begin, '-b DATE', '--begin DATE', 'Beginning of date range'
   c.option :end, '-e DATE', '--end DATE', 'End of date range'
   c.option :pending, '-p', '--pending', 'Include pending transactions'
-end
-
-def load_config(file)
-  file ||= '~/.burglar.yml'
-  file = File.expand_path file
-  Cymbal.symbolize YAML.safe_load(File.read(file))
 end
 
 def date_parse_or_default(string, default)
@@ -34,7 +26,6 @@ Mercenary.program(:burglar) do |p|
   p.action do |_, options|
     options[:end] = date_parse_or_default(options[:end], Date.today)
     options[:begin] = date_parse_or_default(options[:begin], options[:end] - 30)
-    config = load_config(options[:config]).merge(options)
     puts Burglar.new(config).transactions
   end
 end
