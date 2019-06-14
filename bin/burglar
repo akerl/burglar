@@ -9,11 +9,22 @@ def add_common_opts(c)
   c.option :begin, '-b DATE', '--begin DATE', 'Beginning of date range'
   c.option :end, '-e DATE', '--end DATE', 'End of date range'
   c.option :pending, '-p', '--pending', 'Include pending transactions'
+  c.option :shell, '-s', '--shell', 'Launch a REPL with the burglar object'
 end
 
 def date_parse_or_default(string, default)
   return default unless string
   Date.parse(string)
+end
+
+def launch_shell(res)
+  res.transactions
+  require 'pry'
+  binding.pry # rubocop:disable Lint/Debugger
+rescue LoadError
+  warn 'Falling back to IRB because Pry failed to load'
+  require 'irb'
+  binding.irb
 end
 
 Mercenary.program(:burglar) do |p|
@@ -26,6 +37,11 @@ Mercenary.program(:burglar) do |p|
   p.action do |_, options|
     options[:end] = date_parse_or_default(options[:end], Date.today)
     options[:begin] = date_parse_or_default(options[:begin], options[:end] - 30)
-    puts Burglar.new(options).transactions
+    res = Burglar.new(options)
+    if options[:shell]
+      launch_shell res
+    else
+      puts res.transactions
+    end
   end
 end
