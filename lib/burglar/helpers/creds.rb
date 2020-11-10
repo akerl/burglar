@@ -9,6 +9,15 @@ module LogCabin
         credential = Keylime.new(server: server, account: account)
         credential.get!("Enter password for #{server} (#{account})").password
       end
+
+      def stored_creds(server, account)
+        item = keylime.new(server: server, account: account).get
+        item ? item.password : nil
+      end
+
+      def store_cred(server, account, secret)
+        keylime.new(server: server, account: account).set(secret)
+      end
     end
   end
 end
