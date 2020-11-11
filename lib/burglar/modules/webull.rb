@@ -10,16 +10,11 @@ module LogCabin
 
       WEBULL_DOMAIN = 'https://webull.com'
 
-      def raw_transactions # rubocop:disable Metrics/MethodLength
+      def raw_transactions
         @raw_transactions ||= all_transactions.map do |row|
-          amount = format('$%.2f', row.amount)
-          name = row.name.downcase
-          action = guess_action(name)
-          state = row.pending ? :pending : :cleared
-
           ::Ledger::Entry.new(
             name: name,
-            state: state,
+            state: :cleared,
             date: row.date,
             actions: [
               { name: action, amount: amount },
@@ -34,7 +29,12 @@ module LogCabin
 
 
       def all_transactions
-        @all_transactions = api_client.transactions.select {
+        @all_transactions = api_client.transactions(
+          after: begin_date,
+          before: end_date,
+          type: 'filled'
+        )
+      end
 
         return @all_transactions if @all_transactions
         list, total = get_transactions_page(0)
