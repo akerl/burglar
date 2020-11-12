@@ -36,28 +36,6 @@ module LogCabin
         )
       end
 
-        return @all_transactions if @all_transactions
-        list, total = get_transactions_page(0)
-        while list.length < total
-          new, total = get_transactions_page(list.length)
-          list += new
-        end
-        list.reject!(&:pending) unless @options[:pending]
-        @all_transactions = list
-      end
-
-      def begin_date_str
-        @begin_date_str ||= date_str(begin_date)
-      end
-
-      def end_date_str
-        @end_date_str ||= date_str(end_date)
-      end
-
-      def date_str(date)
-        date.strftime('%Y-%m-%d')
-      end
-
       def api_client
         return @api_client if @api_client
         generate_tokens unless refresh_token && access_token
