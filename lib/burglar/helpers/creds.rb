@@ -11,12 +11,12 @@ module LogCabin
       end
 
       def stored_creds(server, account)
-        item = keylime.new(server: server, account: account).get
+        item = Keylime.new(server: server, account: account).get
         item ? item.password : nil
       end
 
       def store_cred(server, account, secret)
-        keylime.new(server: server, account: account).set(secret)
+        Keylime.new(server: server, account: account).set(secret)
       end
     end
   end

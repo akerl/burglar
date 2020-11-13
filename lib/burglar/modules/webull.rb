@@ -8,17 +8,17 @@ module LogCabin
       include Burglar.helpers.find(:creds)
       include Burglar.helpers.find(:ledger)
 
-      WEBULL_DOMAIN = 'https://webull.com'
+      WEBULL_DOMAIN = 'https://webull.com'.freeze
 
       def raw_transactions
         @raw_transactions ||= filtered_orders.map do |row|
           ::Ledger::Entry.new(
-            name: "#{row[:action]} #{,
+            name: "#{row[:action]} #{row[:quantity]} #{row[:symbol]} at #{row[:price]}",
             state: :cleared,
             date: row[:date],
             actions: [
-              { name: action, amount: amount },
-              { name: account_name }
+              { name: account_name, amount: "#{'-' if row[:action] == 'SELL'}#{row[:quantity]} #{row[:symbol]} @ $#{row[:price]}" },
+              { name: account_name, amount: "#{'-' if row[:action] == 'BUY'}$#{row[:total]}" }
             ],
             tags: { 'transaction_id' => row[:id] }
           )
@@ -32,13 +32,13 @@ module LogCabin
       end
 
       def all_orders
-        @all_orders ||= all_events.map { |x| x.orders }.flatten
+        @all_orders ||= all_events.map { |x| x['orders'] }.flatten
       end
 
       def parsed_orders
         @parsed_orders ||= all_orders.map do |x|
           {
-            id: x['orderId']
+            id: x['orderId'],
             symbol: x['symbol'],
             action: x['action'],
             quantity: x['filledQuantity'],
@@ -51,7 +51,7 @@ module LogCabin
 
       def filtered_orders
         @filtered_orders ||= parsed_orders.select do |x|
-          x['date'] >= begin_date && x['date'] <= end_date
+          x[:date] >= begin_date && x[:date] <= end_date
         end
       end
 
