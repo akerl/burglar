@@ -10,22 +10,27 @@ module LogCabin
 
       WEBULL_DOMAIN = 'https://webull.com'.freeze
 
-      def raw_transactions
+      def raw_transactions # rubocop:disable Metrics/MethodLength
         @raw_transactions ||= filtered_orders.map do |row|
+          actions = parse_actions(row)
           ::Ledger::Entry.new(
-            name: "#{row[:action]} #{row[:quantity]} #{row[:symbol]} at #{row[:price]}",
+            name: "#{row[:action]} #{row[:quantity]} #{row[:symbol]} at #{row[:price]}", # rubocop:disable Metrics/LineLength
             state: :cleared,
             date: row[:date],
-            actions: [
-              { name: account_name, amount: "#{'-' if row[:action] == 'SELL'}#{row[:quantity]} #{row[:symbol]} @ $#{row[:price]}" },
-              { name: account_name, amount: "#{'-' if row[:action] == 'BUY'}$#{row[:total]}" }
-            ],
+            actions: actions,
             tags: { 'transaction_id' => row[:id] }
           )
         end
       end
 
       private
+
+      def parse_actions(row)
+        [
+          { name: account_name, amount: "#{'-' if x[:action] == 'SELL'}#{x[:quantity]} #{x[:symbol]} @ $#{x[:price]}" },
+          { name: account_name, amount: "#{'-' if x[:action] == 'BUY'}$#{x[:total]}" }
+        ]
+      end
 
       def all_events
         @all_events ||= api_client.orders(status: 'Filled', pageSize: 999)
@@ -35,22 +40,26 @@ module LogCabin
         @all_orders ||= all_events.map { |x| x['orders'] }.flatten
       end
 
-      def parsed_orders
+      def parsed_orders # rubocop:disable Metrics/MethodLength
         @parsed_orders ||= all_orders.map do |x|
           {
             id: x['orderId'],
             symbol: x['symbol'],
             action: x['action'],
             quantity: x['filledQuantity'],
-            date: Time.at(x['filledTime0'] / 1000).to_date,
+            date: Time.at(x['filledTime0'] / 1000).to_datetime,
             total: x['filledValue'],
             price: x['avgFilledPrice']
           }
         end
       end
 
+      def matched_orders
+        @matched_orders ||= WebullBasisResolver.new(parsed_orders).orders
+      end
+
       def filtered_orders
-        @filtered_orders ||= parsed_orders.select do |x|
+        @filtered_orders ||= matched_orders.select do |x|
           x[:date] >= begin_date && x[:date] <= end_date
         end
       end
@@ -90,5 +99,16 @@ module LogCabin
         @udid ||= @options[:device_name] || raise('Must supply a device_name')
       end
     end
+  end
+end
+
+class WebullBasisResolver
+  def initialize(raw_orders)
+    @raw_orders = raw_orders.sort_by { |x| x[:date] }.reverse
+  end
+
+  def orders
+    return @orders if @orders
+    @orders = @raw_order.select { |x| x[:action] == 'BUY' }
   end
 end

@@ -13,9 +13,9 @@ module Burglar
     end
 
     def banks
-      @banks ||= @options[:banks].map do |k, v|
-        [k, Burglar::Bank.new(@options.merge(v))]
-      end.to_h
+      @banks ||= @options[:banks].transform_values do |v|
+        Burglar::Bank.new(@options.merge(v))
+      end
     end
 
     def transactions
