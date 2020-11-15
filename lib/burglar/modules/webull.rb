@@ -25,10 +25,10 @@ module LogCabin
 
       private
 
-      def parse_actions(row)
+      def parse_actions(x)
         [
-          { name: account_name, amount: "#{'-' if x[:action] == 'SELL'}#{x[:quantity]} #{x[:symbol]} @ $#{x[:price]}" },
-          { name: account_name, amount: "#{'-' if x[:action] == 'BUY'}$#{x[:total]}" }
+          { name: account_name, amount: "#{'-' if x[:action] == 'SELL'}#{x[:quantity]} #{x[:symbol]} @ $#{x[:price] / 100.0}" },
+          { name: account_name, amount: "#{'-' if x[:action] == 'BUY'}$#{x[:total] / 100.0}" }
         ]
       end
 
@@ -46,10 +46,10 @@ module LogCabin
             id: x['orderId'],
             symbol: x['symbol'],
             action: x['action'],
-            quantity: x['filledQuantity'],
+            quantity: x['filledQuantity'].to_i,
             date: Time.at(x['filledTime0'] / 1000).to_datetime,
-            total: x['filledValue'],
-            price: x['avgFilledPrice']
+            total: (x['filledValue'].to_f * 100).to_i,
+            price: (x['avgFilledPrice'].to_f * 100).to_i
           }
         end
       end
@@ -103,12 +103,43 @@ module LogCabin
 end
 
 class WebullBasisResolver
+  attr_reader :raw_orders
+
   def initialize(raw_orders)
     @raw_orders = raw_orders.sort_by { |x| x[:date] }.reverse
   end
 
   def orders
     return @orders if @orders
-    @orders = @raw_order.select { |x| x[:action] == 'BUY' }
+    buy_stack = order_timeline.dup
+    @orders = raw_orders.each_with_object([]) do |item, acc|
+      item = item.dup
+      if item[:action] == 'SELL'
+        item[:cost_basis] = []
+        buy_stack.delete_if do |x|
+          next false if item[:cost_basis].size == item[:quantity]
+          next false if x[:symbol] != item[:symbol]
+          item[:cost_basis] << x[:price]
+        end
+      end
+      acc << item
+    end
+  end
+
+  def buy_orders
+    @buy_orders ||= raw_orders.select { |x| x[:action] == 'BUY' }
+  end
+
+  def order_timeline
+    @order_timeline ||= buy_orders.flat_map do |x|
+      1.upto(x[:quantity].to_i).map do
+        {
+          symbol: x[:symbol],
+          action: x[:action],
+          date: x[:date],
+          price: x[:price]
+        }
+      end
+    end
   end
 end
