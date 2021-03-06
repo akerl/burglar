@@ -24,7 +24,7 @@ def launch_shell(res)
 rescue LoadError
   warn 'Falling back to IRB because Pry failed to load'
   require 'irb'
-  binding.irb
+  binding.irb # rubocop:disable Lint/Debugger
 end
 
 Mercenary.program(:burglar) do |p|

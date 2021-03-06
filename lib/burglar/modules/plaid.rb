@@ -36,8 +36,7 @@ module LogCabin
         @api_client ||= ::Plaid::Client.new(
           env: 'development',
           client_id: client_id,
-          secret: secret_key,
-          public_key: public_key
+          secret: secret_key
         )
       end
 
@@ -100,10 +99,6 @@ module LogCabin
 
       def secret_key
         @secret_key ||= creds(PLAID_DOMAIN, 'secret_key')
-      end
-
-      def public_key
-        @public_key ||= creds(PLAID_DOMAIN, 'public_key')
       end
 
       def access_token
