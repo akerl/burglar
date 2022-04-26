@@ -32,22 +32,33 @@ module LogCabin
 
       private
 
+      def api_configuration
+        @api_configuration ||= ::Plaid::Configuration.new do |c|
+          c.server_index = ::Plaid::Configuration::Environment['development']
+          c.api_key['PLAID-CLIENT-ID'] = client_id
+          c.api_key['PLAID-SECRET'] = secret_key
+          c.api_key['Plaid-Version'] = '2020-09-14'
+        end
+      end
+
       def api_client
-        @api_client ||= ::Plaid::Client.new(
-          env: 'development',
-          client_id: client_id,
-          secret: secret_key
-        )
+        @api_client ||= ::Plaid::ApiClient.new api_configuration
+      end
+
+      def client
+        @client ||= ::Plaid::PlaidApi.new(api_client)
       end
 
       def get_transactions_page(offset)
-        resp = api_client.transactions.get(
-          access_token,
-          begin_date_str,
-          end_date_str,
-          account_ids: [account_id],
-          offset: offset
-        )
+        resp = client.transactions_get(::Plaid::TransactionsGetRequest.new(
+                                         access_token: access_token,
+                                         start_date: begin_date_str,
+                                         end_date: end_date_str,
+                                         options: ::Plaid::TransactionsGetRequestOptions.new(
+                                           account_ids: [account_id],
+                                           offset: offset
+                                         )
+                                       ))
         [resp.transactions, resp.total_transactions]
       end
 
@@ -75,16 +86,16 @@ module LogCabin
       end
 
       def accounts
-        @accounts ||= api_client.accounts.get(access_token)['accounts']
+        @accounts || client.accounts_get(::Plaid::AccountsGetRequest.new(access_token: access_token)).accounts
       end
 
       def account
         @account ||= accounts.first if accounts.size == 1
-        @account ||= accounts.find { |x| x['name'] == account_clean_name }
+        @account ||= accounts.find { |x| x.name == account_clean_name }
       end
 
       def account_id
-        @account_id ||= account['account_id']
+        @account_id ||= account.account_id
       end
 
       def account_clean_name
