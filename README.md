@@ -2,7 +2,7 @@ burglar
 =========
 
 [![Gem Version](https://img.shields.io/gem/v/burglar.svg)](https://rubygems.org/gems/burglar)
-[![GitHub Workflow Status](https://img.shields.io/actions/github/workflow/status/akerl/burglar/build.yml?branch=main)](https://github.com/akerl/burglar/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/akerl/burglar/build.yml?branch=main)](https://github.com/akerl/burglar/actions)
 [![MIT Licensed](https://img.shields.io/badge/license-MIT-green.svg)](https://tldrlegal.com/license/mit-license)
 
 Tool for parsing data from bank websites into the format of [ledger](http://ledger-cli.org/)
