@@ -24,8 +24,8 @@ Gem::Specification.new do |s|
   s.add_dependency 'logcabin', '~> 0.1.3'
   s.add_dependency 'mercenary', '~> 0.4.0'
 
-  s.add_development_dependency 'codecov', '~> 0.5.1'
-  s.add_development_dependency 'goodcop', '~> 0.9.3'
-  s.add_development_dependency 'rake', '~> 13.0.3'
-  s.add_development_dependency 'rspec', '~> 3.10.0'
+  s.add_development_dependency 'codecov', '~> 0.6.0'
+  s.add_development_dependency 'goodcop', '~> 0.9.7'
+  s.add_development_dependency 'rake', '~> 13.0.6'
+  s.add_development_dependency 'rspec', '~> 3.12.0'
 end
