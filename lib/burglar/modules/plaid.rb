@@ -4,7 +4,7 @@ module LogCabin
   module Modules
     ##
     # Plaid
-    module Plaid
+    module Plaid # rubocop:disable Metrics/ModuleLength
       include Burglar.helpers.find(:creds)
       include Burglar.helpers.find(:ledger)
 
@@ -30,6 +30,10 @@ module LogCabin
         end
       end
 
+      def balance
+        @balance ||= load_balance
+      end
+
       private
 
       def api_configuration
@@ -47,6 +51,16 @@ module LogCabin
 
       def client
         @client ||= ::Plaid::PlaidApi.new(api_client)
+      end
+
+      def load_balance
+        resp = client.accounts_balance_get(::Plaid::AccountsBalanceGetRequest.new(
+                                             access_token: access_token,
+                                             options: ::Plaid::AccountsBalanceGetRequestOptions.new(
+                                               account_ids: [account_id]
+                                             )
+                                           ))
+        resp.accounts.first.balances.current
       end
 
       def get_transactions_page(offset)

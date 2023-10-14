@@ -19,11 +19,11 @@ module Burglar
       @end_date ||= @options[:end]
     end
 
-    private
-
     def account_name
       @account_name ||= @options[:account] || default_account_name
     end
+
+    private
 
     def default_account_name
       raise('Module failed to override default_account_name')
