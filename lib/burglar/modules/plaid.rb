@@ -10,6 +10,13 @@ module LogCabin
 
       PLAID_DOMAIN = 'https://plaid.com'.freeze
 
+      def self.load_accounts(client, access_token)
+        @accounts ||= {}
+        return @accounts[access_token] if @accounts[access_token]
+        req = ::Plaid::AccountsGetRequest.new(access_token: access_token)
+        @accounts[access_token] = client.accounts_get(req).accounts
+      end
+
       def raw_transactions # rubocop:disable Metrics/MethodLength
         @raw_transactions ||= all_transactions.map do |row|
           amount = format('$%.2f', row.amount)
@@ -100,7 +107,7 @@ module LogCabin
       end
 
       def accounts
-        @accounts || client.accounts_get(::Plaid::AccountsGetRequest.new(access_token: access_token)).accounts
+        LogCabin::Modules::Plaid.load_accounts(client, access_token)
       end
 
       def account
