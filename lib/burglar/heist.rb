@@ -29,7 +29,7 @@ module Burglar
     def load_config(file)
       file ||= DEFAULT_CONFIG_FILE
       file = File.expand_path file
-      Cymbal.symbolize YAML.safe_load(File.read(file))
+      Cymbal.symbolize YAML.safe_load_file(file)
     end
 
     def load_options(params)
